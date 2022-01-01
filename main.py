@@ -17,9 +17,6 @@ from buddyreads import *
 }'''
 
 
-import pandas
-pandas.DataFrame().to_csv("this.csv")
-
 def mavayyaCalled(mess):
     mavayya = ["Mavayya", "mavayya", "Mamayya", "mavayya"]
     for i in mavayya:
@@ -147,32 +144,6 @@ async def on_message(message):
                                                   embed=embed)
 
 
-
-    # if message.channel.id == 900145851844935681 or message.channel.id == 911854338803109929 or message.channel.id == 876497506849144892:
-    #     if mess.startswith("!br"):
-    #         try:
-    #             temp = eval(BuddyRead(mess.strip(), username)())
-    #             # print(temp)
-    #             msg = await message.channel.send(temp["content"],
-    #                                              embed=discord.Embed.from_dict(
-    #                                                  temp["embeds"][-1]))
-    #             await msg.add_reaction("✅")
-    #             await message.delete()
-    #         except Exception as e:
-    #             await message.channel.send(
-    #                 "Sorry, couldn't process Buddy read request. Exception: {}"
-    #                 .format(e))
-
-    # elif mess[0:2] == "!b":
-    #     spl = mess.split()
-
-    #     gr_link = spl[1]
-    #     book_page = urlopen(gr_link)
-    #     gr_parser = BeautifulSoup(book_page, 'html.parser')
-    #     body = gr_parser.find('div', class_='readable stacked')
-    #     des = body.find_all('span')
-
-    #     await message.channel.send(des[1].text)
     '''if mess=="mama start quiz":
     if quizProgress==False:
       quizProgress=True
@@ -218,18 +189,9 @@ async def on_raw_reaction_add(payload):
     channel=client.get_channel(payload.channel_id)
     mess = await channel.fetch_message(payload.message_id)
     user = mess.author
-    # print(mess.reactions)
-    # print("\n ---------------------- \n")
-    # print(dir(mess.reactions)) 
-    # ems=[i.emoji for i in mess.reactions]
-    # count=[i.count for i in mess.reactions]
-
-    # reacts={ems[i]:count[i] for i in range(len(mess.reactions))}
-    # print(ems,count)
     print(mess.reactions)
     stars = [x for x in mess.reactions if (x.emoji == "⭐")]
     if stars and stars[-1].count==2:
-    # if reacts["⭐"]==2:
         pop = discord.Embed(title=f"{mess.content}", color=user.color)
         pop.set_author(name=f"{user}", icon_url=user.avatar_url)
         await hall_of_fame.send(embed=pop)
