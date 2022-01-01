@@ -17,6 +17,9 @@ from buddyreads import *
 }'''
 
 
+import pandas
+pandas.DataFrame().to_csv("this.csv")
+
 def mavayyaCalled(mess):
     mavayya = ["Mavayya", "mavayya", "Mamayya", "mavayya"]
     for i in mavayya:
@@ -77,8 +80,7 @@ prog = {}
 @client.event
 async def on_message(message):
 
-    username = (message.author.nick) if message.author.nick else str(
-        message.author).split("#")[0]
+    username = (message.author.nick) if message.author.nick else str(message.author).split("#")[0]
 
     global quizProgress
     quizProgress = False
@@ -118,31 +120,59 @@ async def on_message(message):
 
         await message.channel.send(random.choice(recs))
 
-    if message.channel.id == 900145851844935681 or message.channel.id == 911854338803109929 or message.channel.id == 876497506849144892:
-        if mess.startswith("!br"):
-            try:
-                temp = eval(BuddyRead(mess.strip(), username)())
-                # print(temp)
-                msg = await message.channel.send(temp["content"],
-                                                 embed=discord.Embed.from_dict(
-                                                     temp["embeds"][-1]))
-                await msg.add_reaction("✅")
-                await message.delete()
-            except Exception as e:
+    if mess.strip(" \n").lower().startswith("!b"):
+      mess = mess.strip(" \n").lower()
+      try:
+        temp = eval(BuddyRead(mess.strip(), username)())
+        # print(temp)
+        embed=discord.Embed.from_dict(temp["embeds"][-1])
+      except Exception as e:
+        await message.channel.send(
+            "Sorry, couldn't process Book request. Exception: {}"
+            .format(e))
+      if mess.startswith("!br") and (message.channel.id in [900145851844935681, 911854338803109929, 876497506849144892]):
+          try:
+            msg = await message.channel.send(temp["content"],
+                                                  embed=embed)
+            await msg.add_reaction("✅")
+            await message.delete()
+          except Exception as e:
                 await message.channel.send(
                     "Sorry, couldn't process Buddy read request. Exception: {}"
                     .format(e))
+      else:
+        embed.remove_field(1) #end date
+        embed.remove_field(0) #start date
+        msg = await message.channel.send("ఇదిగో, ఈ పుస్తకం చదువుకో",
+                                                  embed=embed)
 
-    elif mess[0:2] == "!b":
-        spl = mess.split()
 
-        gr_link = spl[1]
-        book_page = urlopen(gr_link)
-        gr_parser = BeautifulSoup(book_page, 'html.parser')
-        body = gr_parser.find('div', class_='readable stacked')
-        des = body.find_all('span')
 
-        await message.channel.send(des[1].text)
+    # if message.channel.id == 900145851844935681 or message.channel.id == 911854338803109929 or message.channel.id == 876497506849144892:
+    #     if mess.startswith("!br"):
+    #         try:
+    #             temp = eval(BuddyRead(mess.strip(), username)())
+    #             # print(temp)
+    #             msg = await message.channel.send(temp["content"],
+    #                                              embed=discord.Embed.from_dict(
+    #                                                  temp["embeds"][-1]))
+    #             await msg.add_reaction("✅")
+    #             await message.delete()
+    #         except Exception as e:
+    #             await message.channel.send(
+    #                 "Sorry, couldn't process Buddy read request. Exception: {}"
+    #                 .format(e))
+
+    # elif mess[0:2] == "!b":
+    #     spl = mess.split()
+
+    #     gr_link = spl[1]
+    #     book_page = urlopen(gr_link)
+    #     gr_parser = BeautifulSoup(book_page, 'html.parser')
+    #     body = gr_parser.find('div', class_='readable stacked')
+    #     des = body.find_all('span')
+
+    #     await message.channel.send(des[1].text)
     '''if mess=="mama start quiz":
     if quizProgress==False:
       quizProgress=True
@@ -183,19 +213,26 @@ async def on_message_delete(message):
 
 
 @client.event
-async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
+async def on_raw_reaction_add(payload):
     hall_of_fame = client.get_channel(911854338803109929)
-    mess = await client.fetch_message(payload.message_id)
-    if mess.reactions == "⭐":
+    channel=client.get_channel(payload.channel_id)
+    mess = await channel.fetch_message(payload.message_id)
+    user = mess.author
+    # print(mess.reactions)
+    # print("\n ---------------------- \n")
+    # print(dir(mess.reactions)) 
+    # ems=[i.emoji for i in mess.reactions]
+    # count=[i.count for i in mess.reactions]
 
-        user = client.get_user(payload.user_id)
-
-        pop = discord.Embed(title=f"{mess}", color=user.color)
+    # reacts={ems[i]:count[i] for i in range(len(mess.reactions))}
+    # print(ems,count)
+    print(mess.reactions)
+    stars = [x for x in mess.reactions if (x.emoji == "⭐")]
+    if stars and stars[-1].count==2:
+    # if reacts["⭐"]==2:
+        pop = discord.Embed(title=f"{mess.content}", color=user.color)
         pop.set_author(name=f"{user}", icon_url=user.avatar_url)
-
-        await hall_of_fame.send(f"{user.mention}, reacted with {payload.emoji}"
-                                )
-        #await hall_of_fame.send(embed=pop)
+        await hall_of_fame.send(embed=pop)
 
 
 #keeping the bot online
