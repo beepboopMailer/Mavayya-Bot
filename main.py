@@ -15,9 +15,7 @@ from buddyreads import *
   "Who won the FIFA world cup in 2010?": "Spain",
   "Who wrote the secret history?": "Donna Tart"
 }'''
-
-'''haiii frands'''
-
+from quote import quote
 
 def mavayyaCalled(mess):
     mavayya = ["Mavayya", "mavayya", "Mamayya", "mavayya"]
@@ -118,6 +116,25 @@ async def on_message(message):
         recs = mes.split(',')
 
         await message.channel.send(random.choice(recs))
+
+    if mess.strip(" \n").lower().startswith("!q"):
+      
+      mess_ = mess.strip(" \n").lower().strip("!q")
+      if not mess_:
+        mess_ = random.choice(["love", "life", "inspire", "humor", "good", "truth"])
+      q_ = {"quote": ""}
+      quotes = quote(search = mess_,limit=random.randint(1,100))
+      if quotes:
+        try:
+          while not q_["quote"]:
+            q_ = random.choice(quotes)
+            if len(q_["quote"])>1900:
+              q_ = {"quote": ""}
+          await message.channel.send("'{}' \n ---- \n {} : {}".format(q_["quote"], q_["author"], q_["book"]))
+        except Exception as e:
+          print(e,quotes, sep = "\n")
+      else:
+        await message.channel.send("couldn't get quote for search term {}. \n try with another term".format(mess_))
 
     if mess.strip(" \n").lower().startswith("!b"):
       mess = mess.strip(" \n").lower()
