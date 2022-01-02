@@ -16,6 +16,8 @@ from buddyreads import *
   "Who wrote the secret history?": "Donna Tart"
 }'''
 
+'''haiii frands'''
+
 
 def mavayyaCalled(mess):
     mavayya = ["Mavayya", "mavayya", "Mamayya", "mavayya"]
