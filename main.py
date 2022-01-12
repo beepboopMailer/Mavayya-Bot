@@ -8,6 +8,8 @@ import time
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from buddyreads import *
+from andari_kavitha import *
+
 '''quiz_questions={
   "What is the capital of Sweden?": "Stockholm",
   "What is the largest state in India?": "Rajasthan",
@@ -136,26 +138,39 @@ async def on_message(message):
       else:
         await message.channel.send("couldn't get quote for search term {}. \n try with another term".format(mess_))
 
+    if message.channel.id in GlobVariables.channels:
+      await get_kavitha(message)
+
     if mess.strip(" \n").lower().startswith("!b"):
+      # print(mess)
+      # print("message.channel", message.channel)
+      # # print(message.channel_id)
+      # print(message.channel.id)
+      # # print("message.c_channel", message.c_channel)
+      # messages = await message.channel.history(limit=5).flatten()
+      # print([x.content for x in messages])
+      # # if message.channel == c_channel and int(messages[1].content) + 1 != int(message.content):
+      # #     await message.delete()
+      # print()
       mess = mess.strip(" \n").lower()
       try:
         temp = eval(BuddyRead(mess.strip(), username)())
         # print(temp)
         embed=discord.Embed.from_dict(temp["embeds"][-1])
-      except Exception as e:
+      except Exception as exc_:
         await message.channel.send(
             "Sorry, couldn't process Book request. Exception: {}"
-            .format(e))
+            .format(exc_))
       if mess.startswith("!br") and (message.channel.id in [900145851844935681, 911854338803109929, 876497506849144892]):
           try:
             msg = await message.channel.send(temp["content"],
                                                   embed=embed)
             await msg.add_reaction("✅")
             await message.delete()
-          except Exception as e:
+          except Exception as exc_:
                 await message.channel.send(
                     "Sorry, couldn't process Buddy read request. Exception: {}"
-                    .format(e))
+                    .format(exc_))
       else:
         embed.remove_field(1) #end date
         embed.remove_field(0) #start date
@@ -208,13 +223,16 @@ async def on_raw_reaction_add(payload):
     channel=client.get_channel(payload.channel_id)
     mess = await channel.fetch_message(payload.message_id)
     user = mess.author
-    print(mess.reactions)
+    # print(mess.reactions)
     stars = [x for x in mess.reactions if (x.emoji == "⭐")]
     if stars and stars[-1].count==2:
         pop = discord.Embed(title=f"{mess.content}", color=user.color)
         pop.set_author(name=f"{user}", icon_url=user.avatar_url)
         await hall_of_fame.send(embed=pop)
 
+@client.event
+async def on_ready():
+  await client.get_channel(911854338803109929).send("Nen online ochesa")
 
 #keeping the bot online
 my_secret = os.environ['TOKEN']
