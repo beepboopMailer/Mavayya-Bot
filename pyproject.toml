@@ -17,6 +17,9 @@ python-Levenshtein = "^0.12.2"
 lxml = "^4.7.1"
 quote = "^2.0.4"
 random2 = "^1.0.1"
+super-crawler = "^0.1.0"
+httpimport = "^0.7.2"
+english-words = "^1.0.4"
 
 [tool.poetry.dev-dependencies]
 

@@ -9,6 +9,11 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from buddyreads import *
 from andari_kavitha import *
+from hangMan import Hangman 
+from english_words import english_words_lower_alpha_set
+from botm import *
+
+
 
 '''quiz_questions={
   "What is the capital of Sweden?": "Stockholm",
@@ -63,6 +68,15 @@ def YadminReq(mess):
             return True
     return False
 
+def listToString(s): 
+    # initialize an empty string
+    str1 = "" 
+    # traverse in the string  
+    for ele in s: 
+        str1 += ele  
+    # return string  
+    return str1 
+
 
 intents = discord.Intents.default()
 intents.members = True
@@ -75,6 +89,7 @@ telugu = Translator()
 
 prog = {}
 
+#hangman=Hangman()
 
 @client.event
 async def on_message(message):
@@ -86,40 +101,52 @@ async def on_message(message):
     global ques
     ques = True
     mess = message.content
-
+    
+    
+   
+    
     if message.author == client.user:
         return
 
-    if mavayyaCalled(mess):
+    
+
+    elif mavayyaCalled(mess):
         await message.channel.send(mavayyaQuote(mess, username))
 
-    if Cursed(mess):
+    elif Cursed(mess):
         await message.channel.send(f"yenti ra {username}, yemitaa maatalu?")
 
     #displays the avatar
-    if mess == "-avatar":
+    elif mess == "-avatar":
         await message.channel.send(message.author.avatar_url)
 
-    if YadminReq(mess):
+    elif YadminReq(mess):
         await message.channel.send(
             "Provide aadhar card, 10th class participation certificate, 2 passport size photos, then mod exam pass ga... Then interview pass ga... Internship ippistha."
         )
 
-    if message.channel.id == 923256242481266708:
+    elif message.channel.id == 923256242481266708:
         tel = telugu.translate(mess, src='en', dest='te')
         await message.channel.send(tel.text)
 
-    if mess == "call the cops":
+    elif mess == "call the cops":
         await message.channel.send(
             "ee maatram daaniki kaapulu chowdarilu enduku le amma")
 
-    if mess[0:2] == "!m":
+    elif mess.lower().strip().startswith("!mecho"):
+        mess = mess.lower().strip()[6:].strip(" \n")
+        # print(mess)
+        channelid, mess = mess.split(" ",1)
+        # print(client.get_channel(int(channelid.strip(">#<"))))
+        await client.get_channel(int(channelid.strip(">#<"))).send(mess)
+
+    elif mess[0:2] == "!m":
         mes = mess[3::]
         recs = mes.split(',')
 
         await message.channel.send(random.choice(recs))
 
-    if mess.strip(" \n").lower().startswith("!q"):
+    elif mess.strip(" \n").lower().startswith("!q"):
       
       mess_ = mess.strip(" \n").lower().strip("!q")
       if not mess_:
@@ -138,20 +165,19 @@ async def on_message(message):
       else:
         await message.channel.send("couldn't get quote for search term {}. \n try with another term".format(mess_))
 
-    if message.channel.id in GlobVariables.channels:
+    elif message.channel.id in GlobVariables.channels:
       await get_kavitha(message)
 
-    if mess.strip(" \n").lower().startswith("!b"):
-      # print(mess)
-      # print("message.channel", message.channel)
-      # # print(message.channel_id)
-      # print(message.channel.id)
-      # # print("message.c_channel", message.c_channel)
-      # messages = await message.channel.history(limit=5).flatten()
-      # print([x.content for x in messages])
-      # # if message.channel == c_channel and int(messages[1].content) + 1 != int(message.content):
-      # #     await message.delete()
-      # print()
+
+    elif mess.startswith("!botm"):
+      # l=mess.strip()
+      l = mess.strip().split(" ", 1)
+      gr_link=l[-1]
+      b=BOTM(gr_link)
+      b.setDetails()
+      await message.channel.send(b.botm["title"])
+
+    elif mess.strip(" \n").lower().startswith("!b"):
       mess = mess.strip(" \n").lower()
       try:
         temp = eval(BuddyRead(mess.strip(), username)())
@@ -177,25 +203,34 @@ async def on_message(message):
         msg = await message.channel.send("ఇదిగో, ఈ పుస్తకం చదువుకో",
                                                   embed=embed)
 
-
-    '''if mess=="mama start quiz":
-    if quizProgress==False:
-      quizProgress=True
-  if mess=="mama stop quiz":
-    if quizProgress==True:
-      quizProgress=False
-
-  if mess=="1":
-    if quizProgress:
-      if ques:
-        questions=list(quiz_questions.keys())
-        q=random.choice(questions)
-        ques=False
-        await message.channel.send(q)
-        
+    
+    
+      
+    '''elif mess=="m.hangman" and message.channel.id==911854338803109929:
+      
+      await message.channel.send("Game started!")
+      
+    
+      
+    
+      
+    if hangman.began==True and message.channel.id==911854338803109929:
+      if hangman.wordSolved(hangman.dash)==False:
+        await message.channel.send(listToString(hangman.guess(hangman.word,hangman.dash,hangman.chances,mess)))
+        hangman.chances-=1
+        if  hangman.wordSolved(hangman.dash)==True:
+          await message.channel.send("You won!")
+        if hangman.chances==0:
+          await message.channel.send(f"You ran out of chances! The word was {hangman.word}.")
+          hangman.began=False
       else:
-        if mess==list(quiz_questions[q]):
-          await message.channel.send("correct answer")'''
+        hangman.began=False'''
+        
+
+
+
+
+
 
 
 #welcome message when a member joins
@@ -235,6 +270,21 @@ async def on_ready():
   await client.get_channel(911854338803109929).send("Nen online ochesa")
 
 #keeping the bot online
+
+from itertools import cycle
+from discord.ext import tasks
+status = cycle(['with Python','JetHub'])
+
+@client.event
+async def on_ready():
+  change_status.start()
+  print("Your bot is ready")
+
+@tasks.loop(seconds=30)
+async def change_status():
+  await client.change_presence(activity=discord.Game(next(status)))
+
+
 my_secret = os.environ['TOKEN']
 keep_alive()
 client.run(my_secret)
